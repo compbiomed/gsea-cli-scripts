@@ -1,0 +1,14 @@
+collapse	false
+include_only_symbols	true
+make_sets	true
+mode	Max_probe
+norm	meandiv
+nperm	1000
+plot_top_x	5000
+rnd_seed	1234
+scoring_scheme	weighted
+set_max	500
+set_min	15
+zip_report	false
+chip	/restricted/projectnb/cbmhive/MSigDB/3.1/msigdb.v3.1.entrez.chip
+gmx	/restricted/projectnb/cbmhive/MSigDB/3.1/c2.cp.biocarta.v3.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/3.1/c2.cp.kegg.v3.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/3.1/c2.cp.reactome.v3.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/3.1/c5.bp.v3.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/3.1/c5.cc.v3.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/3.1/c5.mf.v3.1.entrez.gmt

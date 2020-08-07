@@ -1,0 +1,102 @@
+#!/bin/bash
+#
+# qsub script to run GSEA using Java command-line interface
+# Adam Gower
+#
+# qsub flags:
+#$ -cwd
+#$ -j y
+#$ -pe omp 8
+# Note: this job is run in parallel with 8 processors since it will use more than 1 processor of power otherwise,
+#       and the process reaper will kill it.
+# (This was originally set to 4 processors, but the process reaper killed two runs each using > 5 CPUs.) 2016-06-06 ACG
+
+# Source .bashrc file to allow running modules below
+source ~/.bashrc
+
+echo "=========================================================="
+echo "Starting on       : $(date)"
+echo "Running on node   : $(hostname)"
+echo "Current job ID    : $JOB_ID"
+echo "Current job name  : $JOB_NAME"
+echo "Task index number : $TASK_ID"
+echo "=========================================================="
+
+# Load modules
+module load R
+module list
+
+if [ $# -ne 3 ]
+then
+    # If there were not exactly three command-line arguments, terminate with a usage statement
+    echo "Usage: run_GSEA.qsub [.rnk filename] [GSEA parameter filename] [textual description of comparison]"
+else
+    # Otherwise, extract command-line arguments to variables
+    rnk_file=$1
+    parameter_file=$2
+    comparison=$3
+
+    # Paths, filenames and versions
+    gsea_version="2.2.1"
+    jar_file="/restricted/projectnb/cbmhive/GSEA/gsea2-$gsea_version.jar"
+    R_path="/restricted/projectnb/cbmhive/GSEA"
+    rnk_path=$(dirname "$rnk_file")
+    # Extract .chip and .gmx filenames from parameter file
+    chip_file=$(grep "^chip" "$parameter_file" | cut -f2)
+    gmx_files=$(grep "^gmx" "$parameter_file" | cut -f2)
+    gmx_files=${gmx_files//,/ }
+    # Create report label from comparison by replacing hyphens (illegal in command-line GSEA)
+    # and other problematic characters with legal characters/phrases
+    rpt_label="$comparison"
+    rpt_label="${rpt_label//+\/+/_wildtype}"
+    rpt_label="${rpt_label//+\/-/_het}"
+    rpt_label="${rpt_label//-\/-/_null}"
+    rpt_label="${rpt_label// /_}"
+    rpt_label="${rpt_label//:/_}"
+    rpt_label="${rpt_label//-/_}"
+    # Create name for tab-delimited output file from comparison by replacing spaces with underscores
+    output_file="$TMPDIR/${rpt_label}.txt"
+
+    echo "Performing preranked GSEA using ranked list file: $rnk_file"
+    echo "Using GSEA parameters in file:                    $parameter_file"
+    echo "Features ranked according to:                     $comparison"
+    echo
+
+    # Copy .chip and .gmx files to temporary folder for convenience
+    cp -av "$chip_file" $TMPDIR/
+    cp -av $gmx_files $TMPDIR/
+    # Copy .rnk to renamed tempfile for compatibility with command-line GSEA
+    cp -av "$rnk_file" $TMPDIR/${rpt_label}.rnk
+    # Copy parameter file to renamed tempfile
+    cp -av "$parameter_file" $TMPDIR/${rpt_label}_parameters.txt
+
+    # Change to temporary folder
+    cd $TMPDIR/
+
+    # Run preranked GSEA with 4 GB memory
+    # Note: this was originally set to use 1GB of memory, but it was running out as of MSigDB 6.0,
+    #       so this has been increased to 4GB.  2017-05-12 ACG
+    java -cp $jar_file -Xmx4096m xtools.gsea.GseaPreranked \
+         -rnk ${rpt_label}.rnk                             \
+         -rpt_label $rpt_label                             \
+         -out .                                            \
+         -gui false                                        \
+         -param_file ${rpt_label}_parameters.txt
+
+    # Rename run folder
+    mv -v ${rpt_label}.GseaPreranked.* $rpt_label
+
+    # Postprocess GSEA run folder to remove extraneous files and re-annotation HTML and create a file for Excel import
+    R --vanilla < $R_path/postprocess_GSEA.R --args $rpt_label/ "$comparison" $output_file
+
+    # Zip the GSEA folder
+    zip -r $rpt_label.zip $rpt_label/
+
+    # Clean up
+    rsync -av $rpt_label.zip $output_file $rnk_path/
+    rm -rf *
+
+    echo "=========================================================="
+    echo "Finished on       : $(date)"
+    echo "=========================================================="
+fi
