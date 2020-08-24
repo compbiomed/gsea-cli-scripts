@@ -1,18 +1,11 @@
-#!/bin/bash
+#!/bin/bash -l
+#$ -S /bin/bash
+#$ -cwd
+#$ -j y
+#$ -m eas
 #
 # qsub script to run GSEA using Java command-line interface
 # Adam Gower
-#
-# qsub flags:
-#$ -cwd
-#$ -j y
-#$ -pe omp 8
-# Note: this job is run in parallel with 8 processors since it will use more than 1 processor of power otherwise,
-#       and the process reaper will kill it.
-# (This was originally set to 4 processors, but the process reaper killed two runs each using > 5 CPUs.) 2016-06-06 ACG
-
-# Source .bashrc file to allow running modules below
-source ~/.bashrc
 
 echo "=========================================================="
 echo "Starting on       : $(date)"
@@ -22,81 +15,127 @@ echo "Current job name  : $JOB_NAME"
 echo "Task index number : $TASK_ID"
 echo "=========================================================="
 
-# Load modules
-module load R
+# Load and list R module
+module load R/3.6.0
 module list
 
-if [ $# -ne 3 ]
+if [[ $# -ne 4 ]]
 then
-    # If there were not exactly three command-line arguments, terminate with a usage statement
-    echo "Usage: run_GSEA.qsub [.rnk filename] [GSEA parameter filename] [textual description of comparison]"
+  # Check for argument arity and terminate with usage statement if incorrect
+  echo -n "Usage: run_GSEA.qsub [GSEA version] [.rnk filename] "
+  echo "[GSEA parameter filename] [textual description of comparison]"
 else
-    # Otherwise, extract command-line arguments to variables
-    rnk_file=$1
-    parameter_file=$2
-    comparison=$3
+  # Otherwise, extract command-line arguments to variables
+  gsea_version="${1}"
+  rnk_file="${2}"
+  parameter_file="${3}"
+  comparison="${4}"
 
-    # Paths, filenames and versions
-    gsea_version="2.2.1"
-    jar_file="/restricted/projectnb/cbmhive/GSEA/gsea2-$gsea_version.jar"
-    R_path="/restricted/projectnb/cbmhive/GSEA"
-    rnk_path=$(dirname "$rnk_file")
-    # Extract .chip and .gmx filenames from parameter file
-    chip_file=$(grep "^chip" "$parameter_file" | cut -f2)
-    gmx_files=$(grep "^gmx" "$parameter_file" | cut -f2)
-    gmx_files=${gmx_files//,/ }
-    # Create report label from comparison by replacing hyphens (illegal in command-line GSEA)
-    # and other problematic characters with legal characters/phrases
-    rpt_label="$comparison"
-    rpt_label="${rpt_label//+\/+/_wildtype}"
-    rpt_label="${rpt_label//+\/-/_het}"
-    rpt_label="${rpt_label//-\/-/_null}"
-    rpt_label="${rpt_label// /_}"
-    rpt_label="${rpt_label//:/_}"
-    rpt_label="${rpt_label//-/_}"
-    # Create name for tab-delimited output file from comparison by replacing spaces with underscores
-    output_file="$TMPDIR/${rpt_label}.txt"
+  # Place output in the same path as the RNK input file
+  output_path="$(dirname "${rnk_file}")"
 
-    echo "Performing preranked GSEA using ranked list file: $rnk_file"
-    echo "Using GSEA parameters in file:                    $parameter_file"
-    echo "Features ranked according to:                     $comparison"
-    echo
+  # Check that the GSEA_PATH environment variable was set;
+  # if not, set it to "." (current working directory)
+  [[ ${GSEA_PATH} == "" ]] && export GSEA_PATH="."
 
-    # Copy .chip and .gmx files to temporary folder for convenience
-    cp -av "$chip_file" $TMPDIR/
-    cp -av $gmx_files $TMPDIR/
-    # Copy .rnk to renamed tempfile for compatibility with command-line GSEA
-    cp -av "$rnk_file" $TMPDIR/${rpt_label}.rnk
-    # Copy parameter file to renamed tempfile
-    cp -av "$parameter_file" $TMPDIR/${rpt_label}_parameters.txt
+  # Define filenames
+  postprocess_R_script="${GSEA_PATH}/postprocess_GSEA.R"
 
-    # Change to temporary folder
-    cd $TMPDIR/
+  if [[ ${gsea_version} < 4 ]]
+  then
+    # Check for .jar file before proceeding
+    jar_file="$(ls ${GSEA_PATH}/*${gsea_version}.jar)"
+    if [[ "${jar_file}" == "" ]]
+    then
+      echo -n "A .jar file could not be found "
+      echo "for GSEA version ${gsea_version}; terminating."
+      exit
+    fi
+  else
+    # Check for gsea-cli.sh before proceeding
+    gsea_cli_script="${GSEA_PATH}/GSEA_${gsea_version}/gsea-cli.sh"
+    if [[ ! -e "${gsea_cli_script}" ]]
+    then
+      echo -n "File gsea-cli.sh could not be found "
+      echo "for GSEA version ${gsea_version}; terminating."
+      exit
+    fi
+  fi
 
-    # Run preranked GSEA with 4 GB memory
-    # Note: this was originally set to use 1GB of memory, but it was running out as of MSigDB 6.0,
-    #       so this has been increased to 4GB.  2017-05-12 ACG
-    java -cp $jar_file -Xmx4096m xtools.gsea.GseaPreranked \
-         -rnk ${rpt_label}.rnk                             \
-         -rpt_label $rpt_label                             \
-         -out .                                            \
-         -gui false                                        \
-         -param_file ${rpt_label}_parameters.txt
+  # Extract .chip and .gmx filenames from parameter file
+  chip_file=$(grep "^chip" "$parameter_file" | cut -f2)
+  gmx_files=$(grep "^gmx" "$parameter_file" | cut -f2)
+  gmx_files=${gmx_files//,/ }
 
-    # Rename run folder
-    mv -v ${rpt_label}.GseaPreranked.* $rpt_label
+  # Create report label from comparison by replacing hyphens (illegal in CLI
+  # arguments) and other problematic characters with legal characters/phrases
+  rpt_label="$comparison"
+  rpt_label="${rpt_label//+\/+/_wildtype}"
+  rpt_label="${rpt_label//+\/-/_het}"
+  rpt_label="${rpt_label//-\/-/_null}"
+  rpt_label="${rpt_label// /_}"
+  rpt_label="${rpt_label//:/_}"
+  rpt_label="${rpt_label//-/_}"
 
-    # Postprocess GSEA run folder to remove extraneous files and re-annotation HTML and create a file for Excel import
-    R --vanilla < $R_path/postprocess_GSEA.R --args $rpt_label/ "$comparison" $output_file
+  # Create name for tab-delimited output file from comparison
+  # by replacing spaces with underscores
+  output_file="$TMPDIR/${rpt_label}.txt"
 
-    # Zip the GSEA folder
-    zip -r $rpt_label.zip $rpt_label/
+  echo "Performing preranked GSEA"
+  echo "  Using GSEA version:            ${gsea_version}"
+  echo "  Using ranked list file:        ${rnk_file}"
+  echo "  Using GSEA parameters in file: ${parameter_file}"
+  echo "  Features ranked according to:  ${comparison}"
+  echo
 
-    # Clean up
-    rsync -av $rpt_label.zip $output_file $rnk_path/
-    rm -rf *
+  # Copy .chip and .gmx files to temporary folder for convenience
+  cp -av "${chip_file}" $TMPDIR/
+  cp -av ${gmx_files} $TMPDIR/
+  # Copy .rnk to renamed tempfile for compatibility with command-line GSEA
+  cp -av "${rnk_file}" $TMPDIR/${rpt_label}.rnk
+  # Copy parameter file to renamed tempfile
+  cp -av "${parameter_file}" $TMPDIR/${rpt_label}_parameters.txt
 
-    echo "=========================================================="
-    echo "Finished on       : $(date)"
-    echo "=========================================================="
+  # Change to temporary folder
+  cd $TMPDIR/
+
+  if [[ ${gsea_version} < 4 ]]
+  then
+    # Run preranked GSEA with 4 GB RAM
+    # (originally set to 1GB RAM, but was running out as of MSigDB 6.0)
+    java -cp ${jar_file} -Xmx4096m xtools.gsea.GseaPreranked \
+         -rnk "${rpt_label}.rnk"                             \
+         -rpt_label "${rpt_label}"                           \
+         -out .                                              \
+         -gui false                                          \
+         -param_file "${rpt_label}_parameters.txt"
+  else
+    # Note: java 11 is specifically listed as a dependency for GSEA 4.x
+    module load java/11.0.4
+    module list
+    bash ${gsea_cli_script} GseaPreranked \
+         -rnk "${rpt_label}.rnk"          \
+         -rpt_label "${rpt_label}"        \
+         -out .                           \
+         -param_file "${rpt_label}_parameters.txt"
+  fi
+
+  # Rename run folder
+  mv -v "${rpt_label}.GseaPreranked".* "${rpt_label}"
+
+  # Postprocess GSEA run folder to remove extraneous files, re-annotate HTML,
+  # and create a file for Excel import
+  R --vanilla < "${postprocess_R_script}" \
+    --args "${rpt_label}" "${comparison}" "${output_file}"
+
+  # Zip the GSEA folder
+  zip -r "${rpt_label}.zip" "${rpt_label}"/
+
+  # Clean up
+  rsync -av "${rpt_label}.zip" "${output_file}" "${output_path}"/
+  rm -rf *
+
+  echo "=========================================================="
+  echo "Finished on       : $(date)"
+  echo "=========================================================="
 fi
