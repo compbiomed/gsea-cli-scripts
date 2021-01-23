@@ -4,7 +4,7 @@ make_sets	true
 mode	Max_probe
 norm	meandiv
 nperm	1000
-plot_top_x	5000
+plot_top_x	10000
 rnd_seed	1234
 scoring_scheme	weighted
 set_max	500
