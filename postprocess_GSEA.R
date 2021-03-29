@@ -233,8 +233,11 @@ group.labels <- c(
   "c3.tft"         = "TF motif",
   "c5.all"         = "Gene Ontology term",
   "c5.bp"          = "GO Biological Process",
+  "c5.go.bp"       = "GO Biological Process",
   "c5.cc"          = "GO Cellular Component",
-  "c5.mf"          = "GO Molecular Function"
+  "c5.go.cc"       = "GO Cellular Component",
+  "c5.mf"          = "GO Molecular Function",
+  "c5.go.mf"       = "GO Molecular Function"
 )
 # Add 'Group' column (MSigDB collection name) to beginning of output data frame
 group.table <- NULL
