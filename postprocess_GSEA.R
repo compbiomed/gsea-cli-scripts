@@ -24,8 +24,8 @@ setwd(run.path)
 
 # Set phenotype labels based on comparison
 phenotypes <- list(
-  pos = paste("upregulated in", comparison),
-  neg = paste("downregulated in", comparison)
+  pos = paste("upregulated with respect to", comparison),
+  neg = paste("downregulated with respect to", comparison)
 )
 
 # Rename the "na_pos"/"na_neg" fields in the index.html file
@@ -35,12 +35,13 @@ for (direction in c("pos", "neg")) {
   report <- sub(
     paste0(
       "na</b></h4><ul><li>",
-      "([0-9]+) / ([0-9]+) gene sets are upregulated in phenotype <b>",
+      "([0-9]+ / [0-9]+|None of the) gene sets are ",
+      "(upregulated|enriched) in phenotype <b>",
       "na_", direction
     ),
     paste0(
       phenotypes[[direction]],
-      "</b></h4><ul><li>\\1 / \\2 gene sets are <b>",
+      "</b></h4><ul><li>\\1 gene sets are <b>",
       phenotypes[[direction]]
     ),
     report
@@ -54,22 +55,23 @@ report <- sub(
 write(report, "index.html")
 
 for (direction in c("pos", "neg")) {
-  # Get name of .xls file that contains output for given direction
-  filename <- list.files(
+  # Get name of '.xls' (TSV) file containing output for given direction
+  report_filename <- list.files(
     pattern=paste("gsea_report_for_na", direction, "[0-9]+.xls", sep="_")
   )
-  # Read tab-delimited '.xls' file (not really an Excel file)
-  xls <- read.delim(
-    filename, stringsAsFactors=FALSE, check.names=FALSE, row.names=1
+  # Read TSV file into a data frame
+  report <- read.delim(
+    report_filename, stringsAsFactors=FALSE, check.names=FALSE, row.names=1
   )
-  # Identify the rows (gene sets) that pass the FDR q cutoff
-  i <- which(xls[["FDR q-val"]] < q.cutoff)
-  n <- length(i)
 
-  # Reformat Details .html file for each gene set passing FDR q cutoff
-  for (gene.set in rownames(xls)[which(xls[["FDR q-val"]] < q.cutoff)]) {
+  # Identify the rows (gene sets) that pass the FDR q cutoff
+  gene_sets_pass <- report[["FDR q-val"]] < q.cutoff
+
+  # Iterate over each gene set passing FDR q cutoff
+  for (gene.set in rownames(report)[gene_sets_pass]) {
+    # Edit Details .html file
     filename <- paste0(gene.set, ".html")
-    cat("Editing Details file:", filename)
+    cat("Editing file:", filename)
     cat("\n")
     html <- readLines(filename)
     # Remove Phenotype row and rename "na_pos"/"na_neg" phenotype labels
@@ -89,13 +91,25 @@ for (direction in c("pos", "neg")) {
       "",
       html
     )
+    # Remove " [Source:...]" suffix from end of GENE_TITLE column
+    html <- gsub(" \\[Source:[^]]+\\]", "", html)
     # Reconstitute HTML and write back to file
     write(paste(html, collapse="\n"), filename)
+
+    # Edit .xls (TSV) file containing GSEA details table
+    filename <- paste0(gene.set, ".xls")
+    cat("Editing file:", filename)
+    cat("\n")
+    xls <- readLines(filename)
+    # Remove " [Source:...]" suffix from end of GENE_TITLE column
+    xls <- gsub(" \\[Source: [^\\]]+\\]", "", xls)
+    # Write table back to file
+    write(paste(xls, collapse="\n"), filename)
   }
 
   # Remove the .html, .xls, and .png files that correspond to the gene sets
   # that fail the FDR q cutoff
-  for (gene.set in rownames(xls)[which(xls[["FDR q-val"]] >= q.cutoff)]) {
+  for (gene.set in rownames(report)[!gene_sets_pass]) {
     cat("Removing Details files for gene set:", gene.set)
     cat("\n")
     unlink(paste0(gene.set, ".html"), force=TRUE)
@@ -119,6 +133,8 @@ for (direction in c("pos", "neg")) {
   snapshot[[2]] <- gsub("</?tr>", "", snapshot[[2]])
   snapshot[2] <- strsplit(snapshot[2], "</?td>(<td>)?")
   # Keep only table elements corresponding to gene sets that passed FDR q cutoff
+  i <- which(gene_sets_pass)
+  n <- sum(gene_sets_pass)
   snapshot[[2]] <- snapshot[[2]][c(1, i+1, length(snapshot[[2]]))]
   # Fix the title of the HTML file
   snapshot[[2]][1] <-
@@ -171,14 +187,14 @@ for (direction in c("pos", "neg")) {
     html[[2]][length(html[[2]])]
   )
   # Remove hyperlinks from table rows that failed FDR q cutoff
-  html[[2]][which(xls[["FDR q-val"]] >= q.cutoff)+1] <- sub(
+  html[[2]][which(report[["FDR q-val"]] >= q.cutoff)+1] <- sub(
     pattern = paste0(
       "<td><a href='[^']+'>([^<]+)</a></td><td><a href='[^']+'>",
       "Details ...",
       "</a></td>"
     ),
     replacement = "<td>\\1</td><td></td>",
-    x = html[[2]][which(xls[["FDR q-val"]] >= q.cutoff)+1]
+    x = html[[2]][which(report[["FDR q-val"]] >= q.cutoff)+1]
   )
   # Reconstitute HTML and write back to file
   html[[2]][2:(length(html[[2]])-1)] <- paste0(
@@ -189,7 +205,7 @@ for (direction in c("pos", "neg")) {
   write(html, filename)
 }
 
-# Combine ".xls" (tab-delimited) output files into TSV file for import to Excel
+# Combine '.xls' (TSV) output files into single TSV file for import to Excel
 output <- NULL
 for (direction in c("neg", "pos")) {
   filename <- list.files(
