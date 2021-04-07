@@ -10,5 +10,5 @@ scoring_scheme	weighted
 set_max	500
 set_min	15
 zip_report	false
-chip	/rprojectnb/cbmhive/MSigDB/7.1/Human_NCBI_Entrez_Gene_ID_MSigDB.v7.1.chip
-gmx	/rprojectnb/cbmhive/MSigDB/7.1/c2.cp.biocarta.v7.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/7.1/c2.cp.kegg.v7.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/7.1/c2.cp.pid.v7.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/7.1/c2.cp.reactome.v7.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/7.1/c3.mir.v7.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/7.1/c3.tft.v7.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/7.1/c5.bp.v7.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/7.1/c5.cc.v7.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/7.1/c5.mf.v7.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/7.1/h.all.v7.1.entrez.gmt
+chip	/restricted/projectnb/cbmhive/MSigDB/7.1/Human_NCBI_Entrez_Gene_ID_MSigDB.v7.1.chip
+gmx	/restricted/projectnb/cbmhive/MSigDB/7.1/c2.cp.biocarta.v7.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.1/c2.cp.kegg.v7.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.1/c2.cp.pid.v7.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.1/c2.cp.reactome.v7.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.1/c3.mir.v7.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.1/c3.tft.v7.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.1/c5.bp.v7.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.1/c5.cc.v7.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.1/c5.mf.v7.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.1/h.all.v7.1.entrez.gmt
