@@ -239,21 +239,22 @@ params <- structure(sapply(params, "[", 3), names=sapply(params, "[", 2))
 gmt.filenames <- strsplit(params["gmx"], ",")[[1]]
 # Define human-readable labels for the various MSigDB collections
 group.labels <- c(
-  "h.all"          = "Hallmark",
-  "c1.all"         = "Cytoband",
-  "c2.cp.biocarta" = "BioCarta pathway",
-  "c2.cp.kegg"     = "KEGG pathway",
-  "c2.cp.pid"      = "PID pathway",
-  "c2.cp.reactome" = "Reactome pathway",
-  "c3.mir"         = "microRNA motif",
-  "c3.tft"         = "TF motif",
-  "c5.all"         = "Gene Ontology term",
-  "c5.bp"          = "GO Biological Process",
-  "c5.go.bp"       = "GO Biological Process",
-  "c5.cc"          = "GO Cellular Component",
-  "c5.go.cc"       = "GO Cellular Component",
-  "c5.mf"          = "GO Molecular Function",
-  "c5.go.mf"       = "GO Molecular Function"
+  "h.all"              = "Hallmark",
+  "c1.all"             = "Cytoband",
+  "c2.cp.biocarta"     = "BioCarta pathway",
+  "c2.cp.kegg"         = "KEGG pathway",
+  "c2.cp.pid"          = "PID pathway",
+  "c2.cp.reactome"     = "Reactome pathway",
+  "c2.cp.wikipathways" = "WikiPathways pathway",
+  "c3.mir"             = "microRNA motif",
+  "c3.tft"             = "TF motif",
+  "c5.all"             = "Gene Ontology term",
+  "c5.bp"              = "GO Biological Process",
+  "c5.go.bp"           = "GO Biological Process",
+  "c5.cc"              = "GO Cellular Component",
+  "c5.go.cc"           = "GO Cellular Component",
+  "c5.mf"              = "GO Molecular Function",
+  "c5.go.mf"           = "GO Molecular Function"
 )
 # Add 'Group' column (MSigDB collection name) to beginning of output data frame
 group.table <- NULL
