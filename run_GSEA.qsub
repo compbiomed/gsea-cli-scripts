@@ -102,8 +102,9 @@ else
   if [[ ${gsea_version} < 4 ]]
   then
     # Run preranked GSEA with 4 GB RAM
-    # (originally set to 1GB RAM, but was running out as of MSigDB 6.0)
-    java -cp ${jar_file} -Xmx4096m xtools.gsea.GseaPreranked \
+    # (originally set to 1GB RAM, but was running out as of MSigDB 6.0;
+    # then set to 4GB RAM, but running out with MSigDB 7.4 including c7 sets)
+    java -cp ${jar_file} -Xmx8g xtools.gsea.GseaPreranked \
          -rnk "${rpt_label}.rnk"                             \
          -rpt_label "${rpt_label}"                           \
          -out .                                              \
