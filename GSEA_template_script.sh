@@ -13,7 +13,7 @@ project_account="$(groups | cut -f1 -d' ')"
 # gsea_version="4.1.0" # New script-based version, not yet working right on SCC
 gsea_version="2.2.1"   # Old .jar-based version
 # MSigDB version
-msigdb_version="7.5.1"
+msigdb_version="7.4"
 
 # By default, look in current working directory for .rnk files; change as needed
 rnk_path="."
