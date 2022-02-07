@@ -1,0 +1,14 @@
+collapse  false
+include_only_symbols  true
+make_sets true
+mode  Max_probe
+norm  meandiv
+nperm 1000
+plot_top_x  10000
+rnd_seed  1234
+scoring_scheme  weighted
+set_max 500
+set_min 15
+zip_report  false
+chip  /restricted/projectnb/cbmhive/MSigDB/7.5.1/Human_NCBI_Gene_ID_MSigDB.v7.5.1.chip
+gmx /restricted/projectnb/cbmhive/MSigDB/7.5.1/c2.cp.biocarta.v7.5.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.5.1/c2.cp.kegg.v7.5.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.5.1/c2.cp.pid.v7.5.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.5.1/c2.cp.reactome.v7.5.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.5.1/c2.cp.wikipathways.v7.5.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.5.1/c3.mir.v7.5.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.5.1/c3.tft.v7.5.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.5.1/c5.go.bp.v7.5.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.5.1/c5.go.cc.v7.5.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.5.1/c5.go.mf.v7.5.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/7.5.1/h.all.v7.5.1.entrez.gmt
