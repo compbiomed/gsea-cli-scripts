@@ -261,7 +261,7 @@ group.table <- NULL
 for (filename in gmt.filenames) {
   gene.set.names <- sapply(strsplit(readLines(filename), "\t"), "[", 1)
   group.label <- group.labels[
-    sub("\\.v[0-9]\\.[0-9].entrez.gmt$", "", basename(filename))
+    sub("\\.v[0-9](\\.[0-9])+.entrez.gmt$", "", basename(filename))
   ]
   group.table <- rbind(
     group.table,
