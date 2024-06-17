@@ -239,13 +239,15 @@ params <- structure(sapply(params, "[", 3), names=sapply(params, "[", 2))
 gmt.filenames <- strsplit(params["gmx"], ",")[[1]]
 # Define human-readable labels for the various MSigDB collections
 group.labels <- c(
-  "h.all"              = "Hallmark",
+  "h.all"              = "H Hallmark",
   "c1.all"             = "C1 Cytogenetic bands",
   "c2.all"             = "C2 Curated gene sets",
   "c2.cgp"             = "C2 Chemical/genetic perturbations",
   "c2.cp"              = "C2 Canonical pathways",
   "c2.cp.biocarta"     = "C2 BioCarta pathway",
   "c2.cp.kegg"         = "C2 KEGG pathway",
+  "c2.cp.kegg_legacy"  = "C2 KEGG legacy pathway",
+  "c2.cp.kegg_medicus" = "C2 KEGG MEDICUS pathway",
   "c2.cp.pid"          = "C2 PID pathway",
   "c2.cp.reactome"     = "C2 Reactome pathway",
   "c2.cp.wikipathways" = "C2 WikiPathways pathway",
@@ -257,6 +259,7 @@ group.labels <- c(
   "c3.tft.tft_legacy"  = "C3 Legacy TF motif",
   "c3.tft.gtrd"        = "C3 GTRD TF motif",
   "c4.all"             = "C4 Computational gene sets",
+  "c4.3ca"             = "C4 Curated Cancer Cell Atlas",
   "c4.cgn"             = "C4 Cancer gene neighborhoods",
   "c4.cm"              = "C4 Cancer modules",
   "c5.all"             = "C5 Ontology gene sets",
@@ -272,14 +275,32 @@ group.labels <- c(
   "c7.all"             = "C7 Immunologic signatures",
   "c7.immunesigdb"     = "C7 ImmuneSigDB",
   "c7.vax"             = "C7 HIPC vaccine response",
-  "c8.all"             = "C8 Cell type signatures"
+  "c8.all"             = "C8 Cell type signatures",
+  "mh.all"             = "MH Hallmark",
+  "m1.all"             = "M1 Cytogenetic bands",
+  "m2.all"             = "M2 Curated gene sets",
+  "m2.cgp"             = "M2 Chemical/genetic perturbations",
+  "m2.cp"              = "M2 Canonical pathways",
+  "m2.cp.biocarta"     = "M2 BioCarta pathway",
+  "m2.cp.reactome"     = "M2 Reactome pathway",
+  "m2.cp.wikipathways" = "M2 WikiPathways pathway",
+  "m3.all"             = "M3 Regulatory targets",
+  "m3.mirdb"           = "M3 miRDB microRNA motif",
+  "m3.gtrd"            = "M3 GTRD TF motif",
+  "m5.all"             = "M5 Ontology gene sets",
+  "m5.go"              = "M5 Gene Ontology",
+  "m5.go.bp"           = "M5 GO Biological Process",
+  "m5.go.cc"           = "M5 GO Cellular Component",
+  "m5.go.mf"           = "M5 GO Molecular Function",
+  "m5.mpt"             = "M5 Mouse Phenotype Ontology MP Tumor",
+  "m8.all"             = "M8 Cell type signatures"
 )
 # Add 'Group' column (MSigDB collection name) to beginning of output data frame
 group.table <- NULL
 for (filename in gmt.filenames) {
   gene.set.names <- sapply(strsplit(readLines(filename), "\t"), "[", 1)
   group.label <- group.labels[
-    sub("\\.v[0-9](\\.[0-9])+.entrez.gmt$", "", basename(filename))
+    sub("\\.v.+\\.entrez\\.gmt$", "", basename(filename))
   ]
   group.table <- rbind(
     group.table,
