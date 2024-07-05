@@ -19,17 +19,19 @@ echo "=========================================================="
 module load R/3.6.0
 module list
 
-if [[ $# -ne 4 ]]
+if [[ $# -lt 4 ]]
 then
   # Check for argument arity and terminate with usage statement if incorrect
   echo -n "Usage: run_GSEA.qsub [GSEA version] [.rnk filename] "
-  echo "[GSEA parameter filename] [textual description of comparison]"
+  echo -n "[GSEA parameter filename] [textual description of comparison] "
+  echo    "[optional FDR q cutoff]"
 else
   # Otherwise, extract command-line arguments to variables
   gsea_version="${1}"
   rnk_file="${2}"
   parameter_file="${3}"
   comparison="${4}"
+  q_cutoff="${5}"
 
   # Place output in the same path as the RNK input file
   output_path="$(dirname "${rnk_file}")"
@@ -127,7 +129,7 @@ else
   # Postprocess GSEA run folder to remove extraneous files, re-annotate HTML,
   # and create a file for Excel import
   R --vanilla < "${postprocess_R_script}" \
-    --args "${rpt_label}" "${comparison}" "${output_file}"
+    --args "${rpt_label}" "${comparison}" "${output_file}" "${q_cutoff}"
 
   # Zip the GSEA folder
   zip -r "${rpt_label}.zip" "${rpt_label}"/

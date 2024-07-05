@@ -5,18 +5,20 @@
 # Adam Gower
 
 arglist <- commandArgs(trailing=TRUE)
-if (length(arglist) != 3) {
+if (length(arglist) < 3) {
   stop(
     "Usage: postprocess_GSEA.R --args ",
-    "[run path] [description of comparison] [output filename]"
+    "[run path] [description of comparison] [output filename] [FDR q cutoff]"
   )
 } else {
   run.path <- arglist[1]
   comparison <- arglist[2]
   output.filename <- arglist[3]
+  q.cutoff <- as.numeric(arglist[4])
 }
 
-q.cutoff <- 0.25
+# If an FDR q cutoff is not provided, use 0.25
+if (is.na(q.cutoff)) q.cutoff <- 0.25
 
 cat("Working on run folder:", run.path)
 cat("\n")
