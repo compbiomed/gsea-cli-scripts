@@ -10,5 +10,5 @@ scoring_scheme	weighted
 set_max	500
 set_min	15
 zip_report	false
-chip	/restricted/projectnb/cbmhive/MSigDB/3.1/msigdb.v3.1.entrez.chip
-gmx	/restricted/projectnb/cbmhive/MSigDB/3.1/c2.cp.biocarta.v3.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/3.1/c2.cp.kegg.v3.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/3.1/c2.cp.reactome.v3.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/3.1/c5.bp.v3.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/3.1/c5.cc.v3.1.entrez.gmt,/restricted/projectnb/cbmhive/MSigDB/3.1/c5.mf.v3.1.entrez.gmt
+chip	/rprojectnb/cbmhive/MSigDB/3.1/msigdb.v3.1.entrez.chip
+gmx	/rprojectnb/cbmhive/MSigDB/3.1/c2.cp.biocarta.v3.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/3.1/c2.cp.kegg.v3.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/3.1/c2.cp.reactome.v3.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/3.1/c5.bp.v3.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/3.1/c5.cc.v3.1.entrez.gmt,/rprojectnb/cbmhive/MSigDB/3.1/c5.mf.v3.1.entrez.gmt
